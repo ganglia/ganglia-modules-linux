@@ -499,45 +499,45 @@ io_writetot_func( void )
 
 /* --------------------------------------------------------------------------- */
 g_val_t
-io_readkbtot_func( void )
+io_nreadtot_func( void )
 {
 	g_val_t val;
 	int p;
-	unsigned int rd_iopskb_tot = 0;
-	unsigned int rd_iopskb_diff = 0;
+	unsigned int rd_iops_sec_tot = 0;
+	unsigned int rd_iops_sec_diff = 0;
 
 	get_kernel_io_stats();
 	double deltams = get_deltams();
 	// fprintf(stderr, "deltams: %f\n", deltams);
 	
 	for (p = 0; p < n_partitions; p++) {
-		rd_iopskb_diff = new_blkio[p].rd_sectors - old_blkio[p].rd_sectors;	
-		rd_iopskb_tot  += rd_iopskb_diff;
+		rd_iops_sec_diff = new_blkio[p].rd_sectors - old_blkio[p].rd_sectors;	
+		rd_iops_sec_tot  += rd_iops_sec_diff;
 	}
 
-	val.f = (float) PER_SEC(rd_iopskb_tot) / 2.0;
+	val.f = (float) PER_SEC(rd_iops_sec_tot) * 512.0;
 	return val;
 }
 
 /* --------------------------------------------------------------------------- */
 g_val_t
-io_writekbtot_func( void )
+io_nwritetot_func( void )
 {
 	g_val_t val;
 	int p;
-	unsigned int wr_iopskb_tot = 0;
-	unsigned int wr_iopskb_diff = 0;
+	unsigned int wr_iops_sec_tot = 0;
+	unsigned int wr_iops_sec_diff = 0;
 
 	get_kernel_io_stats();
 	double deltams = get_deltams();
 	// fprintf(stderr, "deltams: %f\n", deltams);
 	
 	for (p = 0; p < n_partitions; p++) {
-		wr_iopskb_diff = new_blkio[p].wr_sectors - old_blkio[p].wr_sectors;	
-		wr_iopskb_tot  += wr_iopskb_diff; 
+		wr_iops_sec_diff = new_blkio[p].wr_sectors - old_blkio[p].wr_sectors;	
+		wr_iops_sec_tot  += wr_iops_sec_diff; 
 	}
 
-	val.f = (float) PER_SEC(wr_iopskb_tot) / 2.0;
+	val.f = (float) PER_SEC(wr_iops_sec_tot) * 512.0;
 	return val;
 }
 
@@ -566,7 +566,7 @@ io_svctmax_func( void )
 		if(svct > svct_max) svct_max = svct;
 	}
 
-	val.f = (float) svct_max;
+	val.f = (float) svct_max / 1000.0;
 	return val;
 }
 
@@ -587,7 +587,7 @@ io_queuemax_func( void )
 		if(queue > queue_max) queue_max = queue;
 	}
 
-	val.f = (float) queue_max;
+	val.f = (float) queue_max / 1000.0;
 	return val;
 }
 
@@ -676,11 +676,11 @@ static g_val_t iostat_metric_handler ( int metric_index )
     case 0:
 			return io_readtot_func();
     case 1:
-			return io_readkbtot_func();
+			return io_nreadtot_func();
     case 2:
 			return io_writetot_func();
     case 3:
-			return io_writekbtot_func();
+			return io_nwritetot_func();
     case 4:
 			return io_svctmax_func();
     case 5:
@@ -697,13 +697,13 @@ static g_val_t iostat_metric_handler ( int metric_index )
 static Ganglia_25metric iostat_metric_info[] = 
 {
 #ifdef LINUX
-	{0, "io_readtot",   120, GANGLIA_VALUE_FLOAT,          "Count",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of reads"},
-  {0, "io_readkbtot", 120, GANGLIA_VALUE_FLOAT,          "KB",         "both",  "%.3f",UDP_HEADER_SIZE+8, "total kilobytes read"},
-  {0, "io_writetot",  120, GANGLIA_VALUE_FLOAT,          "Count",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of writes"},
-  {0, "io_writekbtot",120, GANGLIA_VALUE_FLOAT,          "KB",         "both",  "%.3f",UDP_HEADER_SIZE+8, "total kilobytes written"},
-  {0, "io_svctmax",   120, GANGLIA_VALUE_FLOAT,          "msec",       "both",  "%.2f",UDP_HEADER_SIZE+8, "max service time across disks"},
-  {0, "io_queuemax",  120, GANGLIA_VALUE_FLOAT,          " ",          "both",  "%.2f",UDP_HEADER_SIZE+8, "max queue time across disks"},
-  {0, "io_busymax",   120, GANGLIA_VALUE_FLOAT,          "%",          "both",  "%.2f",UDP_HEADER_SIZE+8, "max busy time across disks"},
+	{0, "io_reads",   120, GANGLIA_VALUE_FLOAT,          "reads/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of reads"},
+  {0, "io_nread", 120, GANGLIA_VALUE_FLOAT,          "bytes/sec",         "both",  "%.1f",UDP_HEADER_SIZE+8, "total bytes read"},
+  {0, "io_writes",  120, GANGLIA_VALUE_FLOAT,          "writes/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of writes"},
+  {0, "io_nwrite",120, GANGLIA_VALUE_FLOAT,          "bytes/sec",         "both",  "%.1f",UDP_HEADER_SIZE+8, "total bytes written"},
+  {0, "io_max_svc_time",   120, GANGLIA_VALUE_FLOAT,          "s",       "both",  "%.6f",UDP_HEADER_SIZE+8, "max service time across disks"},
+  {0, "io_max_wait_time",  120, GANGLIA_VALUE_FLOAT,          "s",          "both",  "%.6f",UDP_HEADER_SIZE+8, "max queue time across disks"},
+  {0, "io_busymax",   120, GANGLIA_VALUE_FLOAT,          "%",          "both",  "%.3f",UDP_HEADER_SIZE+8, "max busy time across disks"},
 #endif
   {0, NULL}
 };
