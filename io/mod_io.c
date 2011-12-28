@@ -535,7 +535,7 @@ io_busymax_func( void )
  * Declare ourselves so the configuration routines can find and know us.
  * We'll fill it in at the end of the module.
  */
-extern mmodule iostat_module;
+extern mmodule io_module;
 
 static int iostat_metric_init ( apr_pool_t *p )
 {
@@ -621,7 +621,7 @@ static Ganglia_25metric iostat_metric_info[] =
   {0, NULL}
 };
 
-mmodule iostat_module =
+mmodule io_module =
 {
     STD_MMODULE_STUFF,
     iostat_metric_init,
