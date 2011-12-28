@@ -14,8 +14,11 @@
 #include <stdlib.h>
 #include <strings.h>
 #include <time.h>
+#include <unistd.h>
 
+#include <linux/major.h>
 
+#include "file.h"
 
 /* Iostat related info from jbkim
  *  The contents of /proc/partitions is different from kernel 2.4 to 2.6.
@@ -84,8 +87,91 @@ struct cpu_info {
 void init_partition_info(char **wanted_partitions, int wanted_partitions_n);
 void print_io_info(void);
 
+/* Never changes */
+#ifndef BUFFSIZE
+#define BUFFSIZE 16384
+#endif
+
+typedef struct {
+  struct timeval last_read;
+  float thresh;
+  char *name;
+  char buffer[BUFFSIZE];
+} timely_file;
+
+timely_file proc_stat       = { {0,0} , 1., "/proc/stat" };
 timely_file proc_partitions = { {0,0} , 1., "/proc/partitions" };
 timely_file proc_diskstats  = { {0,0} , 1., "/proc/diskstats" };
+
+
+
+float timediff(const struct timeval *thistime, const struct timeval *lasttime)
+{
+  float diff;
+
+  diff = ((double) thistime->tv_sec * 1.0e6 +
+          (double) thistime->tv_usec -
+          (double) lasttime->tv_sec * 1.0e6 -
+          (double) lasttime->tv_usec) / 1.0e6;
+
+  return diff;
+}
+
+char *update_file(timely_file *tf)
+{
+  int rval;
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  if(timediff(&now,&tf->last_read) > tf->thresh) {
+    rval = slurpfile(tf->name, tf->buffer, BUFFSIZE);
+    if(rval == SYNAPSE_FAILURE) {
+      err_msg("update_file() got an error from slurpfile() reading %s",
+              tf->name);
+      return (char *)SYNAPSE_FAILURE;
+    }
+    else tf->last_read = now;
+  }
+  return tf->buffer;
+}
+
+
+/*
+** A helper function to determine the number of cpustates in /proc/stat (MKN)
+*/
+#define NUM_CPUSTATES_24X 4
+#define NUM_CPUSTATES_26X 7
+static unsigned int num_cpustates;
+
+unsigned int
+num_cpustates_func ( void )
+{
+   char *p;
+   unsigned int i=0;
+
+   proc_stat.last_read.tv_sec=0;
+   proc_stat.last_read.tv_usec=0;
+   p = update_file(&proc_stat);
+   proc_stat.last_read.tv_sec=0;
+   proc_stat.last_read.tv_usec=0;
+
+/*
+** Skip initial "cpu" token
+*/
+   p = skip_token(p);
+   p = skip_whitespace(p);
+/*
+** Loop over file until next "cpu" token is found.
+** i=4 : Linux 2.4.x
+** i=7 : Linux 2.6.x
+*/
+   while (strncmp(p,"cpu",3)) {
+     p = skip_token(p);
+     p = skip_whitespace(p);
+     i++;
+     }
+
+   return i;
+}
 
 
 
@@ -539,12 +625,13 @@ extern mmodule io_module;
 
 static int iostat_metric_init ( apr_pool_t *p )
 {
-    const char* str_params = iostat_module.module_params;
-    apr_array_header_t *list_params = iostat_module.module_params_list;
+    const char* str_params = io_module.module_params;
+    apr_array_header_t *list_params = io_module.module_params_list;
     mmparam *params;
     int i;
 
     //libmetrics_init();
+    num_cpustates = num_cpustates_func();
     init_partition_info(NULL, 0);
     print_io_info(); // prints debug msg
 
@@ -563,9 +650,9 @@ static int iostat_metric_init ( apr_pool_t *p )
         }
     }
 
-    for (i = 0; iostat_module.metrics_info[i].name != NULL; i++) {
-        MMETRIC_INIT_METADATA(&(iostat_module.metrics_info[i]),p);
-        MMETRIC_ADD_METADATA(&(iostat_module.metrics_info[i]),MGROUP,"disk");
+    for (i = 0; io_module.metrics_info[i].name != NULL; i++) {
+        MMETRIC_INIT_METADATA(&(io_module.metrics_info[i]),p);
+        MMETRIC_ADD_METADATA(&(io_module.metrics_info[i]),MGROUP,"disk");
     }
 
     return 0;
