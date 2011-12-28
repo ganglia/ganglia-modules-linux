@@ -1,10 +1,30 @@
 
 
-Sample configure command:
+Updated metric names and units
+==============================
+
+v1.0.0:
+- metric names follow the original naming convention for mod_iostat
+- values reported are in KB not Bytes, so you might see `K' twice in the
+  rrd graph (and if you see K twice, it means you are looking at MBytes)
+
+v1.1.0:
+- metric names follow the convention of ganglia-modules-solaris
+  (similar to names in kstat, e.g. io_nwrite = number of bytes written)
+- values reported in unscaled units (bytes and seconds) rather than
+  in KB and milliseconds
+
+
+Building
+========
+
+Sample configure command for building the modules:
 
 export GANGLIA_HOME=/usr/src/ganglia-3.1.7
 
 ./configure \
   CFLAGS="`apr-1-config --cflags --includes` -I${GANGLIA_HOME}/include/ -I${GANGLIA_HOME}/lib/ -I${GANGLIA_HOME}/libmetrics/" \
   --enable-shared --disable-static
+
+
 
