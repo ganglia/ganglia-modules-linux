@@ -14,7 +14,7 @@ modio_la_LDFLAGS = -module -avoid-version
 EXTRA_DIST = ../conf.d/mod_io.conf
 endif
 
-INCLUDES = @APR_INCLUDES@
+#INCLUDES = @APR_INCLUDES@
 
 pkglibdir = $(libdir)/ganglia
 

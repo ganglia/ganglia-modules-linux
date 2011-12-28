@@ -15,7 +15,7 @@ EXTRA_DIST = ../conf.d/mod_example.conf
 
 endif
 
-INCLUDES = @APR_INCLUDES@
+#INCLUDES = @APR_INCLUDES@
 
 install:
 	@echo
