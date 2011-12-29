@@ -163,29 +163,6 @@ static void init_cpu_info (void)
     return;
 }
 
-/*
- * Get the metric name and index from the original
- * metric name
- */
-static void get_metric_name_cpu (char *metric, char *name, int *index)
-{
-    /* The metric name contains both the name and the cpu id. 
-       Split the cpu id from the name so that we can use it to
-       decide which metric handler to call and for which cpu.
-    */
-    size_t numIndex = strcspn (metric, "0123456789");
-
-    if (numIndex > 0) {
-        strncpy (name, metric, numIndex);
-        name[numIndex] = '\0';
-        *index = atoi(&metric[numIndex]);
-    } else {
-        *name = '\0';
-        *index = 0;
-    }
-
-    return;
-}
 
 static double total_jiffies_func (char *p);
 
@@ -272,6 +249,9 @@ static void calculate_utilization (char *p, cpu_util *cpu)
 
     return;
 }
+
+/* typedef g_val_t (*mcpu_func_t)(cpu_data_t *cpu); */
+typedef g_val_t (*mcpu_func_t)(int cpu_index);
 
 static g_val_t multi_cpu_user_func (int cpu_index)
 {
@@ -461,33 +441,62 @@ static g_val_t multi_cpu_sintr_func (int cpu_index)
 
 static apr_array_header_t *metric_info = NULL;
 
-/* Initialize the give metric by allocating the per metric data
-   structure and inserting a metric definition for each cpu found
-*/
-static cpu_util *init_metric (apr_pool_t *p, apr_array_header_t *ar, int cpu_count, char *name, char *desc)
-{
-    int i;
-    Ganglia_25metric *gmi;
-    cpu_util *cpu;
 
-    cpu = apr_pcalloc (p, sizeof(cpu_util)*cpu_count);
+typedef struct metric_spec {
+	mcpu_func_t func;
+	const char *name;
+	const char *units;
+	const char *desc;
+	const char *fmt;
+	cpu_util **cpu;
+} metric_spec_t;
 
-    for (i=0; i<cpu_count; i++) {
-        gmi = apr_array_push(ar);
+#define NUM_CPU_METRICS 7
+metric_spec_t my_metrics[] = {
+		{ multi_cpu_user_func, "multicpu_user", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the user level", "%.1f", &cpu_user },
+		{ multi_cpu_nice_func, "multicpu_nice", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the nice level", "%.1f", &cpu_nice },
+		{ multi_cpu_system_func, "multicpu_system", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the system level", "%.1f", &cpu_system },
+		{ multi_cpu_idle_func, "multicpu_idle", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the idle level", "%.1f", &cpu_idle },
+		{ multi_cpu_wio_func, "multicpu_wio", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the wio level", "%.1f", &cpu_wio },
+		{ multi_cpu_intr_func, "multicpu_intr", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the intr level", "%.1f", &cpu_intr },
+		{ multi_cpu_sintr_func, "multicpu_sintr", "%",
+				"Percentage of CPU utilization that occurred while "
+					"executing at the sintr level", "%.1f", &cpu_sintr },
+		{ NULL, NULL, NULL, NULL, NULL, NULL} };
 
-        /* gmi->key will be automatically assigned by gmond */
-        gmi->name = apr_psprintf (p, "%s%d", name, i);
-        gmi->tmax = 90;
-        gmi->type = GANGLIA_VALUE_FLOAT;
-        gmi->units = apr_pstrdup(p, "%");
-        gmi->slope = apr_pstrdup(p, "both");
-        gmi->fmt = apr_pstrdup(p, "%.1f");
-        gmi->msg_size = UDP_HEADER_SIZE+8;
-        gmi->desc = apr_pstrdup(p, desc);        
-    }
 
-    return cpu;
+void init_metrics_for_cpu(apr_pool_t *p, apr_array_header_t *ar, int cpu_num) {
+	metric_spec_t *metric;
+	Ganglia_25metric *gmi;
+
+	debug_msg("multicpu: init for cpu instance %d", cpu_num);
+	for (metric = my_metrics; metric->func != NULL; metric++) {
+		gmi = apr_array_push(ar);
+
+		/* gmi->key will be automatically assigned by gmond */
+		gmi->name = apr_psprintf(p, "%s%d", metric->name, cpu_num);
+		gmi->tmax = 90;
+		gmi->type = GANGLIA_VALUE_FLOAT;
+		gmi->units = apr_pstrdup(p, metric->units);
+		gmi->slope = apr_pstrdup(p, "both");
+		gmi->fmt = apr_pstrdup(p, metric->fmt);
+		gmi->msg_size = UDP_HEADER_SIZE + 8;
+		gmi->desc = apr_pstrdup(p, metric->desc);
+	}
 }
+
 
 static int ex_metric_init (apr_pool_t *p)
 {
@@ -502,27 +511,13 @@ static int ex_metric_init (apr_pool_t *p)
     metric_info = apr_array_make(pool, 2, sizeof(Ganglia_25metric));
 
     /* Initialize each metric */
-    cpu_user = init_metric (pool, metric_info, cpu_count, "multicpu_user", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the user level");
-    cpu_nice = init_metric (pool, metric_info, cpu_count, "multicpu_nice", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the nice level");
-    cpu_system = init_metric (pool, metric_info, cpu_count, "multicpu_system", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the system level");
-    cpu_idle = init_metric (pool, metric_info, cpu_count, "multicpu_idle", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the idle level");
-    cpu_wio = init_metric (pool, metric_info, cpu_count, "multicpu_wio", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the wio level");
-    cpu_intr = init_metric (pool, metric_info, cpu_count, "multicpu_intr", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the intr level");
-    cpu_sintr = init_metric (pool, metric_info, cpu_count, "multicpu_sintr", 
-                            "Percentage of CPU utilization that occurred while "
-                            "executing at the sintr level");
+    for(i = 0; i < cpu_count; i++) {
+    	init_metrics_for_cpu(p, metric_info, i);
+    }
+    
+    for(i = 0; i < NUM_CPU_METRICS; i++) {
+    	*(my_metrics[i].cpu) = apr_pcalloc (p, sizeof(cpu_util)*cpu_count);
+    }
 
     /* Add a terminator to the array and replace the empty static metric definition 
         array with the dynamic array that we just created 
@@ -547,41 +542,19 @@ static void ex_metric_cleanup ( void )
 {
 }
 
-static g_val_t ex_metric_handler ( int metric_index )
-{
-    g_val_t val;
-    int index;
-    char name[64];
+static g_val_t ex_metric_handler(int metric_index) {
+	g_val_t val;
+	int cpu_index;
+	int _metric_index;
 
-    /* Get the metric name and cpu index from the combined
-       name that was passed in
-    */
-    get_metric_name_cpu (multicpu_module.metrics_info[metric_index].name, name, &index);
+	cpu_index = metric_index / NUM_CPU_METRICS;
+	_metric_index = metric_index % NUM_CPU_METRICS;
 
-    if (strcmp(name, "multicpu_user") == 0) 
-        return multi_cpu_user_func(index);
+	debug_msg("multicpu: handling read for metric %d CPU %d idx %d",
+			metric_index, cpu_index, _metric_index);
+	val = my_metrics[_metric_index].func(cpu_index);
 
-    if (strcmp(name, "multicpu_nice") == 0) 
-        return multi_cpu_nice_func(index);
-
-    if (strcmp(name, "multicpu_system") == 0) 
-        return multi_cpu_system_func(index);
-
-    if (strcmp(name, "multicpu_idle") == 0) 
-        return multi_cpu_idle_func(index);
-
-    if (strcmp(name, "multicpu_wio") == 0) 
-        return multi_cpu_wio_func(index);
-
-    if (strcmp(name, "multicpu_intr") == 0) 
-        return multi_cpu_intr_func(index);
-
-    if (strcmp(name, "multicpu_sintr") == 0) 
-        return multi_cpu_sintr_func(index);
-
-    /* default case */
-    val.f = 0;
-    return val;
+	return val;
 }
 
 mmodule multicpu_module =
