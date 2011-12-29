@@ -14,6 +14,14 @@ v1.1.0:
 - values reported in unscaled units (bytes and seconds) rather than
   in KB and milliseconds
 
+modmulticpu
+===========
+
+This version of modmulticpu is based on the original module contributed
+by Brad Nicholes to the main Ganglia tree.
+
+It has been enhanced to access the array of CPU data in a more efficient
+manner.
 
 Building
 ========
