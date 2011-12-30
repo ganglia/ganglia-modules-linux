@@ -1,7 +1,7 @@
 AM_CFLAGS  = -D_LARGEFILE64_SOURCE -I$(top_builddir)/include -I$(top_builddir)/libmetrics -I$(top_builddir)/lib 
 
 if STATIC_BUILD
-noinst_LTLIBRARIES    = libfs.la
+noinst_LTLIBRARIES    = libmodfs.la
 libmodfs_la_SOURCES = mod_fs.c
 libmodfs_la_LDFLAGS = -export-all-symbols
 else
