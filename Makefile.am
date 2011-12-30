@@ -8,7 +8,7 @@ if STATIC_BUILD
 
 else
 
-SUBDIRS = example multicpu io
+SUBDIRS = example fs multicpu io
 
 GCFLAGS = -D_LARGEFILE64_SOURCE
 GLDFLAGS = -export-dynamic
