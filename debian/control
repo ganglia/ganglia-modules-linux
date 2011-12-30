@@ -1,0 +1,15 @@
+Source: ganglia-modules-linux
+Section: admin
+Priority: extra
+Maintainer: Daniel Pocock <daniel@pocock.com.au>
+Build-Depends: cdbs, debhelper (>= 7.0.50~), autotools-dev, libganglia1-dev
+Standards-Version: 3.8.4
+Homepage: https://sourceforge.net/projects/gmod-linux
+#Vcs-Git: git://git.debian.org/collab-maint/ganglia-modules-linux.git
+#Vcs-Browser: http://git.debian.org/?p=collab-maint/ganglia-modules-linux.git;a=summary
+
+Package: ganglia-modules-linux
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Ganglia extra modules for Linux (IO, filesystems, multicpu)
+ IO statistics (like iostat), individual filesystem stats and per-core CPU.
