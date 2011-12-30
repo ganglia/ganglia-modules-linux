@@ -270,7 +270,7 @@ static g_val_t ex_metric_handler(int metric_index) {
 	g_val_t val;
 	int fs_index;
 	int _metric_index;
-	fs_info_t *all_fs = filesystems->elts, *fs;
+	fs_info_t *all_fs = (fs_info_t *)filesystems->elts, *fs;
 
 	fs_index = metric_index / NUM_FS_METRICS;
 	_metric_index = metric_index % NUM_FS_METRICS;
