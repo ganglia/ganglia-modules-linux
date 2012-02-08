@@ -9,7 +9,8 @@ include /usr/share/cdbs/1/class/autotools.mk
 # FIXME
 GANGLIA_HOME = /home/daniel/src/ganglia-3.1.7
 
-CFLAGS = `apr-1-config --cflags --includes` -I$(GANGLIA_HOME)/include/ -I$(GANGLIA_HOME)/lib/ -I$(GANGLIA_HOME)/libmetrics/
+#CFLAGS = `apr-1-config --cflags --includes` -I$(GANGLIA_HOME)/include/ -I$(GANGLIA_HOME)/lib/ -I$(GANGLIA_HOME)/libmetrics/
+CFLAGS = `apr-1-config --cflags --includes`
 
 
 install/ganglia-modules-linux::

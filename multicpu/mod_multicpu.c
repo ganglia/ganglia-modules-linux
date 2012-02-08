@@ -37,8 +37,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "file.h"
-#include "libmetrics.h"
+/* #include "file.h"
+#include "libmetrics.h" */
+#include "ganglia_mod_workaround.h"
 
 #include <apr_tables.h>
 #include <apr_strings.h>

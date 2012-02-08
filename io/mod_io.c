@@ -10,7 +10,7 @@
  * The ganglia metric "C" interface, required for building DSO modules.
  */
 #include <gm_metric.h>
-#include <libmetrics.h>
+/* #include <libmetrics.h> */
 #include <stdlib.h>
 #include <strings.h>
 #include <time.h>
@@ -18,7 +18,8 @@
 
 #include <linux/major.h>
 
-#include "file.h"
+/* #include "file.h" */
+#include "ganglia_mod_workaround.h"
 
 /* Iostat related info from jbkim
  *  The contents of /proc/partitions is different from kernel 2.4 to 2.6.
