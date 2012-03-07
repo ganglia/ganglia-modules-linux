@@ -35,16 +35,23 @@ by Brad Nicholes to the main Ganglia tree.
 It has been enhanced to access the array of CPU data in a more efficient
 manner.
 
+Building (if using code from git)
+=================================
+
+Prepare the tree with this command:
+
+  mkdir m4 && autoreconf --install
+
+Then follow the steps below to build.
+
 Building
 ========
 
 Sample configure command for building the modules:
 
-export GANGLIA_HOME=/usr/src/ganglia-3.1.7
+  ./configure \
+    CFLAGS="`apr-1-config --cflags --includes`" \
+    --enable-shared --disable-static
 
-./configure \
-  CFLAGS="`apr-1-config --cflags --includes` -I${GANGLIA_HOME}/include/ -I${GANGLIA_HOME}/lib/ -I${GANGLIA_HOME}/libmetrics/" \
-  --enable-shared --disable-static
-
-
+  make
 
