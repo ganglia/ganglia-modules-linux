@@ -2,6 +2,9 @@
 Changelog
 =========
 
+v1.3.2: Adapt to use gm_file.h instead of local copies of Ganglia
+        helper functions (requires ganglia headers > 3.3.2)
+v1.3.1: Tweak to build without a local copy of the full Ganglia source tree
 v1.3.0: add filesystem capacity metrics
 v1.2.0: improve multiCPU metric performance
 v1.1.0: rename metric names for IO to follow ganglia-modules-solaris
