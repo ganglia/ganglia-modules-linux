@@ -2,6 +2,7 @@
 Changelog
 =========
 
+v1.3.3: Tweak README: requires ganglia headers > 3.3.1
 v1.3.2: Adapt to use gm_file.h instead of local copies of Ganglia
         helper functions (requires ganglia headers > 3.3.2)
 v1.3.1: Tweak to build without a local copy of the full Ganglia source tree
