@@ -14,7 +14,7 @@ dnl
 dnl    You should have received a copy of the GNU General Public License
 dnl    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-AC_INIT(ganglia-modules-linux,1.3.2)
+AC_INIT(ganglia-modules-linux,1.3.3)
 AC_CONFIG_SRCDIR(example/mod_example.c)
 AM_INIT_AUTOMAKE
 
