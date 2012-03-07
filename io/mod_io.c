@@ -18,8 +18,7 @@
 
 #include <linux/major.h>
 
-/* #include "file.h" */
-#include "ganglia_mod_workaround.h"
+#include "gm_file.h"
 
 /* Iostat related info from jbkim
  *  The contents of /proc/partitions is different from kernel 2.4 to 2.6.
@@ -88,18 +87,6 @@ struct cpu_info {
 void init_partition_info(char **wanted_partitions, int wanted_partitions_n);
 void print_io_info(void);
 
-/* Never changes */
-#ifndef BUFFSIZE
-#define BUFFSIZE 16384
-#endif
-
-typedef struct {
-  struct timeval last_read;
-  float thresh;
-  char *name;
-  char buffer[BUFFSIZE];
-} timely_file;
-
 timely_file proc_stat       = { {0,0} , 1., "/proc/stat" };
 timely_file proc_partitions = { {0,0} , 1., "/proc/partitions" };
 timely_file proc_diskstats  = { {0,0} , 1., "/proc/diskstats" };
@@ -117,24 +104,6 @@ float timediff(const struct timeval *thistime, const struct timeval *lasttime)
 
   return diff;
 }
-
-char *update_file(timely_file *tf)
-{
-  int rval;
-  struct timeval now;
-  gettimeofday(&now, NULL);
-  if(timediff(&now,&tf->last_read) > tf->thresh) {
-    rval = slurpfile(tf->name, tf->buffer, BUFFSIZE);
-    if(rval == SYNAPSE_FAILURE) {
-      err_msg("update_file() got an error from slurpfile() reading %s",
-              tf->name);
-      return (char *)SYNAPSE_FAILURE;
-    }
-    else tf->last_read = now;
-  }
-  return tf->buffer;
-}
-
 
 /*
 ** A helper function to determine the number of cpustates in /proc/stat (MKN)

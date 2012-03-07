@@ -37,9 +37,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* #include "file.h"
-#include "libmetrics.h" */
-#include "ganglia_mod_workaround.h"
+#include "gm_file.h"
 
 #include <apr_tables.h>
 #include <apr_strings.h>
@@ -49,18 +47,6 @@
  * We'll fill it in at the end of the module.
  */
 mmodule multicpu_module;
-
-/* Never changes */
-#ifndef BUFFSIZE
-#define BUFFSIZE 16384
-#endif
-
-typedef struct {
-  struct timeval last_read;
-  float thresh;
-  char *name;
-  char buffer[BUFFSIZE];
-} timely_file;
 
 static timely_file proc_stat    = { {0,0} , 1., "/proc/stat" };
 
@@ -99,24 +85,6 @@ float timediff(const struct timeval *thistime, const struct timeval *lasttime)
           (double) lasttime->tv_usec) / 1.0e6;
 
   return diff;
-}
-
-static char *update_file(timely_file *tf)
-{
-    int rval;
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    if(timediff(&now,&tf->last_read) > tf->thresh) {
-        rval = slurpfile(tf->name, tf->buffer, BUFFSIZE);
-        if(rval == SYNAPSE_FAILURE) {
-            err_msg("update_file() got an error from slurpfile() reading %s",
-                    tf->name);
-            return (char *)SYNAPSE_FAILURE;
-        }
-        else 
-            tf->last_read = now;
-    }
-    return tf->buffer;
 }
 
 /*
