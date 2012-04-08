@@ -20,7 +20,11 @@ set -e
 
 case "$1" in
     configure)
-        /etc/init.d/ganglia-monitor restart
+        if which invoke-rc.d >/dev/null 2>&1; then
+     		invoke-rc.d ganglia-monitor restart
+     	else
+     		/etc/init.d/ganglia-monitor restart
+     	fi
     ;;
 
     abort-upgrade|abort-remove|abort-deconfigure)

@@ -2,7 +2,7 @@ Source: ganglia-modules-linux
 Section: admin
 Priority: extra
 Maintainer: Daniel Pocock <daniel@pocock.com.au>
-Build-Depends: cdbs, debhelper (>= 7.0.50~), autotools-dev, libganglia1-dev (>= 3.3.5-1)
+Build-Depends: cdbs, debhelper (>= 7.0.50~), autotools-dev, libganglia1-dev (>= 3.3.5)
 Standards-Version: 3.9.3
 Homepage: https://sourceforge.net/projects/gmod-linux
 #Vcs-Git: git://git.debian.org/collab-maint/ganglia-modules-linux.git
@@ -12,4 +12,11 @@ Package: ganglia-modules-linux
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: Ganglia extra modules for Linux (IO, filesystems, multicpu)
- IO statistics (like iostat), individual filesystem stats and per-core CPU.
+ Ganglia's core modules provide essential metrics like RAM and CPU load
+ and most of them are implemented for any platform where Ganglia runs.
+ The ganglia-modules-linux project is not constrained by the requirements
+ to support all the Ganglia platforms: these modules are implemented
+ exclusively for Linux users.  The implementations are high-performance
+ C code.  The exact modules currently included are IO statistics
+ (similar to the statistics from iostat), individual filesystem capacity
+ statistics and per-core CPU metrics.
