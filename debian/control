@@ -2,7 +2,7 @@ Source: ganglia-modules-linux
 Section: admin
 Priority: extra
 Maintainer: Daniel Pocock <daniel@pocock.com.au>
-Build-Depends: cdbs, debhelper (>= 7.0.50~), autotools-dev, libganglia1-dev
+Build-Depends: cdbs, debhelper (>= 7.0.50~), autotools-dev, libganglia1-dev (>= 3.3.5-1)
 Standards-Version: 3.9.3
 Homepage: https://sourceforge.net/projects/gmod-linux
 #Vcs-Git: git://git.debian.org/collab-maint/ganglia-modules-linux.git
