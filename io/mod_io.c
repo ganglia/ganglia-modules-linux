@@ -87,9 +87,11 @@ struct cpu_info {
 void init_partition_info(char **wanted_partitions, int wanted_partitions_n);
 void print_io_info(void);
 
-timely_file proc_stat       = { {0,0} , 1., "/proc/stat" };
-timely_file proc_partitions = { {0,0} , 1., "/proc/partitions" };
-timely_file proc_diskstats  = { {0,0} , 1., "/proc/diskstats" };
+#define IO_BUFFSIZE 65535
+
+timely_file proc_stat       = { {0,0} , 1., "/proc/stat", NULL, IO_BUFFSIZE };
+timely_file proc_partitions = { {0,0} , 1., "/proc/partitions", NULL, IO_BUFFSIZE };
+timely_file proc_diskstats  = { {0,0} , 1., "/proc/diskstats", NULL, IO_BUFFSIZE };
 
 
 

@@ -48,7 +48,9 @@
  */
 mmodule multicpu_module;
 
-static timely_file proc_stat    = { {0,0} , 1., "/proc/stat" };
+#define MCPU_BUFFSIZE 16384
+
+static timely_file proc_stat    = { {0,0} , 1., "/proc/stat", NULL, MCPU_BUFFSIZE };
 
 struct cpu_util {
    g_val_t val;
