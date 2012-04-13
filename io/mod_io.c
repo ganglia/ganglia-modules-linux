@@ -644,7 +644,6 @@ static g_val_t iostat_metric_handler ( int metric_index )
        the metrics appear in the metric_info array
     */
     switch (metric_index) {
-#ifdef LINUX
     case 0:
 			return io_readtot_func();
     case 1:
@@ -659,7 +658,6 @@ static g_val_t iostat_metric_handler ( int metric_index )
 			return io_queuemax_func();
     case 6:
 			return io_busymax_func();
-#endif
     default:
       return val; /* default fallback */
     }
@@ -668,7 +666,6 @@ static g_val_t iostat_metric_handler ( int metric_index )
 
 static Ganglia_25metric iostat_metric_info[] = 
 {
-#ifdef LINUX
 	{0, "io_reads",   120, GANGLIA_VALUE_FLOAT,          "reads/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of reads"},
   {0, "io_nread", 120, GANGLIA_VALUE_FLOAT,          "bytes/sec",         "both",  "%.1f",UDP_HEADER_SIZE+8, "total bytes read"},
   {0, "io_writes",  120, GANGLIA_VALUE_FLOAT,          "writes/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of writes"},
@@ -676,7 +673,6 @@ static Ganglia_25metric iostat_metric_info[] =
   {0, "io_max_svc_time",   120, GANGLIA_VALUE_FLOAT,          "s",       "both",  "%.6f",UDP_HEADER_SIZE+8, "max service time across disks"},
   {0, "io_max_wait_time",  120, GANGLIA_VALUE_FLOAT,          "s",          "both",  "%.6f",UDP_HEADER_SIZE+8, "max queue time across disks"},
   {0, "io_busymax",   120, GANGLIA_VALUE_FLOAT,          "%",          "both",  "%.3f",UDP_HEADER_SIZE+8, "max busy time across disks"},
-#endif
   {0, NULL}
 };
 
