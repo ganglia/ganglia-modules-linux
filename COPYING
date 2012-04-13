@@ -1,5 +1,7 @@
 -----------------------------------------------------------------------------
     ganglia-modules-linux: modules for collecting metrics on Linux
+    Copyright (C) 2007 Brad Nicholes, Novell (BSD license)
+    Copyright (C) 2008 JB Kim (BSD license)
     Copyright (C) 2011 Daniel Pocock
 
     This program is free software: you can redistribute it and/or modify
@@ -25,11 +27,11 @@
       example module) have been copied as-is from the main Ganglia
       distribution and retain the original BSD-like copyright
     - the contents of the `multicpu' directory are loosely based on
-      the module contributed to the main Ganglia distribution by
-      Brad Nicholes (bnicholes novell.com)
+      the module contributed (under a BSD license) to the main Ganglia
+      distribution by Brad Nicholes (bnicholes novell.com)
     - the contents of the `io' directory are based on the
-      module contributed to the Ganglia mailing list by JB Kim
-      (jbremnant gmail.com) adapted to resemble the metric names
+      module contributed to the Ganglia mailing list (under a BSD license)
+      by JB Kim (jbremnant gmail.com) adapted to resemble the metric names
       used in ganglia-modules-solaris
     - the modules implement the Ganglia metric module interface.
       Ganglia is distributed under a BSD-like license at http://ganglia.info
