@@ -2,6 +2,7 @@
 Changelog
 =========
 
+v1.3.5: Add a free space metric.
 v1.3.4: Explicitly define some buffer sizes.
 v1.3.3: Tweak README: requires ganglia headers > 3.3.1
 v1.3.2: Adapt to use gm_file.h instead of local copies of Ganglia
