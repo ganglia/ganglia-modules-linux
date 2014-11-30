@@ -128,6 +128,31 @@ static g_val_t fs_used_bytes_func (fs_info_t *fs)
 
 }
 
+static g_val_t fs_free_func (fs_info_t *fs)
+{
+        g_val_t val;
+
+        struct statvfs svfs;
+        unsigned long blocksize;
+        fsblkcnt_t blocks_free;
+        fsblkcnt_t total_blocks;
+
+        val.f = (float) NAN;
+
+        if (statvfs(fs->mount_point, &svfs)) {
+                /* Ignore funky devices... */
+                err_msg("statvfs failed for %s: %s", fs->mount_point, strerror(errno));
+                return val;
+        }
+
+        total_blocks = svfs.f_blocks;
+        blocks_free = svfs.f_bfree;
+
+        val.f = (float)100.0 * blocks_free / total_blocks;
+        return val;
+
+}
+
 typedef struct metric_spec {
 	fs_func_t fs_func;
 	const char *name;
@@ -137,11 +162,12 @@ typedef struct metric_spec {
 } metric_spec_t;
 
 
-#define NUM_FS_METRICS 2
+#define NUM_FS_METRICS 3
 metric_spec_t metrics[] = {
 		
 		{ fs_capacity_bytes_func, "capacity_bytes", "bytes", "capacity in bytes", "%.0f" },
 		{ fs_used_bytes_func, "used_bytes", "bytes", "space used in bytes", "%.0f" },
+                { fs_free_func, "free_pct", "%", "percentage space free", "%.0f" },
 		
 		{ NULL, NULL, NULL, NULL, NULL }
 };
