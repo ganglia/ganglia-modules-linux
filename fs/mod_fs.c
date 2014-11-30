@@ -146,7 +146,7 @@ static g_val_t fs_free_func (fs_info_t *fs)
         }
 
         total_blocks = svfs.f_blocks;
-        blocks_free = svfs.f_bfree;
+        blocks_free = svfs.f_bavail;
 
         val.f = (float)100.0 * blocks_free / total_blocks;
         return val;
