@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/autoreconf.mk
+
+
+# Add here any variable or target overrides you need.
+
+CFLAGS = `apr-1-config --cflags --cppflags --includes`
+
+install/ganglia-modules-linux::
+	mkdir -p debian/ganglia-modules-linux/etc/ganglia/conf.d
+	cp conf.d/mod_fs.conf debian/ganglia-modules-linux/etc/ganglia/conf.d/mod_fs.conf-sample
+	cp conf.d/mod_io.conf debian/ganglia-modules-linux/etc/ganglia/conf.d
+	cp conf.d/mod_multicpu.conf debian/ganglia-modules-linux/etc/ganglia/conf.d/mod_multicpu.conf-sample
+	rm debian/ganglia-modules-linux/usr/lib/ganglia/modmulticpu.so
+	rm debian/ganglia-modules-linux/usr/lib/ganglia/*.a
+	rm debian/ganglia-modules-linux/usr/lib/ganglia/*.la
+
+

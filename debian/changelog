@@ -1,0 +1,53 @@
+ganglia-modules-linux (1.3.6-2) unstable; urgency=medium
+
+  * Only restart service if already running. (Closes: #790951)
+
+ -- Daniel Pocock <daniel@pocock.pro>  Fri, 03 Jul 2015 11:29:54 +0200
+
+ganglia-modules-linux (1.3.6-1) unstable; urgency=low
+
+  * New upstream release.
+  * Use b_avail instead of b_free for free space. (Closes: #772481)
+
+ -- Daniel Pocock <daniel@pocock.pro>  Sun, 07 Dec 2014 18:14:22 +0100
+
+ganglia-modules-linux (1.3.5-1) unstable; urgency=low
+
+  * New upstream release.
+  * Add a free space percentage metric.
+  * Fix truncation of name for root filesystem metric. (Closes: #771521)
+
+ -- Daniel Pocock <daniel@pocock.pro>  Sun, 30 Nov 2014 14:04:33 +0100
+
+ganglia-modules-linux (1.3.4-7) unstable; urgency=low
+
+  * Migrate from collab-maint to pkg-monitoring.
+
+ -- Daniel Pocock <daniel@pocock.pro>  Sun, 14 Sep 2014 10:21:53 +0200
+
+ganglia-modules-linux (1.3.4-6) unstable; urgency=low
+
+  * Add VCS locations to control file.
+  * Update copyright file to DEP-5 format, clarify BSD terms
+  * Upstream move to github (update home page and watch file)
+
+ -- Daniel Pocock <daniel@pocock.com.au>  Mon, 05 Nov 2012 14:53:57 +0100
+
+ganglia-modules-linux (1.3.4-5) unstable; urgency=low
+
+  * Eliminate issues relating to ganglia-monitor
+    restart during remove/purge (Closes: #669860)
+
+ -- Daniel Pocock <daniel@pocock.com.au>  Sat, 21 Apr 2012 15:49:38 +0200
+
+ganglia-modules-linux (1.3.4-4) unstable; urgency=low
+
+  * Add ganglia-monitor to Depends (Closes: #669329)
+
+ -- Daniel Pocock <daniel@pocock.com.au>  Thu, 19 Apr 2012 10:33:41 +0200
+
+ganglia-modules-linux (1.3.4-2) unstable; urgency=low
+
+  * Initial Release (Closes: #665829).
+
+ -- Daniel Pocock <daniel@pocock.com.au>  Sat, 07 Apr 2012 14:33:04 +0100

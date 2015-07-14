@@ -1,0 +1,23 @@
+Source: ganglia-modules-linux
+Section: admin
+Priority: extra
+Maintainer: Debian Monitoring Maintainers <pkg-monitoring-maintainers@lists.alioth.debian.org>
+Uploaders: Daniel Pocock <daniel@pocock.pro>
+Build-Depends: cdbs, debhelper (>= 7.0.50~), dh-autoreconf, libganglia1-dev (>= 3.3.5), libconfuse-dev, libapr1-dev
+Standards-Version: 3.9.5
+Homepage: https://github.com/ganglia/ganglia-modules-linux
+Vcs-Git: git://anonscm.debian.org/pkg-monitoring/ganglia-modules-linux.git
+Vcs-Browser: https://anonscm.debian.org/cgit/pkg-monitoring/ganglia-modules-linux.git
+
+Package: ganglia-modules-linux
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ganglia-monitor
+Description: Ganglia extra modules for Linux (IO, filesystems, multicpu)
+ Ganglia's core modules provide essential metrics like RAM and CPU load
+ and most of them are implemented for any platform where Ganglia runs.
+ The ganglia-modules-linux project is not constrained by the requirements
+ to support all the Ganglia platforms: these modules are implemented
+ exclusively for Linux users.  The implementations are high-performance
+ C code.  The exact modules currently included are IO statistics
+ (similar to the statistics from iostat), individual filesystem capacity
+ statistics and per-core CPU metrics.

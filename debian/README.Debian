@@ -1,0 +1,11 @@
+
+
+Note:
+
+- mod_multicpu is not enabled by default, you must rename the config:
+
+   cd /etc/ganglia/conf.d && mv mod_multicpu.conf-sample mod_multicpu.conf
+     
+- mod_fs is not enabled by default, you must rename the config:
+
+   cd /etc/ganglia/conf.d && mv mod_fs.conf-sample mod_fs.conf
