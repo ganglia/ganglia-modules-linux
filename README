@@ -30,6 +30,24 @@ v1.1.0:
 - values reported in unscaled units (bytes and seconds) rather than
   in KB and milliseconds
 
+When does a module belong in ganglia-modules-linux?
+===================================================
+
+Does a module belong in ganglia-modules-linux or in the main gmond
+repository (monitor-core on Github)?
+
+If the answers to these questions is YES, the module probably belongs
+in this repository:
+- does the module access files under /proc that only exist on Linux?
+- does it depend on C libraries that only exist on Linux?
+- does it use syscalls or special parameters to syscalls that only
+  exist on Linux?
+
+If the C library calls made by the module are POSIX, then the module
+probably belongs in the main monitor-core repository as it
+may work for users on other platforms, even if you can't test
+those platforms yourself.
+
 modmulticpu
 ===========
 
