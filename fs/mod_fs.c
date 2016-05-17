@@ -28,6 +28,10 @@
 #include <apr_tables.h>
 #include <apr_strings.h>
 
+#ifndef NAN
+#define NAN (0.0f/0.0f) /* <math.h> only includes <bits/nan.h> in C99 */
+#endif
+
 /*
  * Declare ourselves so the configuration routines can find and know us.
  * We'll fill it in at the end of the module.
