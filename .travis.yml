@@ -3,6 +3,8 @@ addons:
     apt:
         packages:
             - libapr1-dev
+            - libconfuse-dev
+            - libxml2-dev
 
 before_install:
     - git clone https://github.com/ganglia/monitor-core.git 
