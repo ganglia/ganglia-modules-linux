@@ -2,9 +2,11 @@ language: c
 addons:
     apt:
         - libapr1-dev
+
 before_script:
     - git clone https://github.com/ganglia/monitor-core.git 
     - cd monitor-core && git checkout $GANGLIA_RELEASE
+
 install: true
 #install:
 #    - ./configure --enable-shared --disable-static  CFLAGS="`apr-1-config --cflags --includes` -Imonitor-core/include -Imonitor-core/lib"
