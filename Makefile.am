@@ -1,5 +1,5 @@
 
-DIST_SUBDIRS = example multicpu io fs
+DIST_SUBDIRS = example fs multicpu io user
 
 AUTOMAKE_OPTIONS = foreign dist-tarZ
 ACLOCAL_AMFLAGS = -I m4
