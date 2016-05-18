@@ -14,6 +14,6 @@ install:
     - autoreconf --install
 
 script:
-    - ./configure --enable-shared --disable-static  CFLAGS="`apr-1-config --cflags --includes` -I`pwd`/monitor-core/include -I`pwd`/monitor-core/lib"
+    - ./configure --enable-shared --disable-static  CFLAGS="`apr-1-config --cflags --includes` -I`pwd`/monitor-core/include -I`pwd`/monitor-core/lib -I/usr/include"
     - make
 
