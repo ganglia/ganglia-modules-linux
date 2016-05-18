@@ -10,5 +10,7 @@ before_script:
 
 #install: true
 install:
+    - mkdir m4
+    - autoreconf --install
     - ./configure --enable-shared --disable-static  CFLAGS="`apr-1-config --cflags --includes` -Imonitor-core/include -Imonitor-core/lib"
 
