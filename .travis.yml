@@ -4,11 +4,10 @@ addons:
         packages:
             - libapr1-dev
 
-before_script:
+before_install:
     - git clone https://github.com/ganglia/monitor-core.git 
-    - cd monitor-core && git checkout $GANGLIA_RELEASE
+    - (cd monitor-core && git checkout $GANGLIA_RELEASE)
 
-#install: true
 install:
     - mkdir m4
     - autoreconf --install
