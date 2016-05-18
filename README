@@ -76,7 +76,7 @@ Sample configure command for building the modules:
 
   GANGLIA_INCLUDES="-I/some/path/to/monitor-core/include -I/some/path/to/monitor-core/lib"
   ./configure \
-    CFLAGS="`apr-1-config --cflags --includes` $GANGLIA_INCLUDES" \
+    "$GANGLIA_INCLUDES" \
     --enable-shared --disable-static
 
   make

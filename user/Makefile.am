@@ -16,7 +16,7 @@ EXTRA_DIST = ../conf.d/mod_user.conf
 
 endif
 
-#INCLUDES = @APR_INCLUDES@
+AM_CPPFLAGS = @APR_INCLUDES@
 
 pkglibdir = $(libdir)/ganglia
 
