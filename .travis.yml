@@ -4,15 +4,14 @@ addons:
         packages:
             - libapr1-dev
             - libconfuse-dev
-            - libganglia1-dev
 
-#before_install:
-#    - git clone https://github.com/ganglia/monitor-core.git 
+before_install:
+    - sudo apt-get update -q
+    - sudo apt-get install -y -q libganglia1-dev
 
 install:
     - mkdir m4
     - autoreconf --install
-#    - (cd monitor-core && git checkout $GANGLIA_RELEASE && ./bootstrap && ./configure --disable-exec --disable-python --disable-perl --disable-status --without-gmetad && cd lib && make gm_protocol.h )
 
 script:
     - ./configure --enable-shared --disable-static  CFLAGS="`apr-1-config --cflags --includes` -I`pwd`/monitor-core/include -I`pwd`/monitor-core/lib"
