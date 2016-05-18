@@ -66,13 +66,17 @@ Prepare the tree with this command:
 
 Then follow the steps below to build.
 
+You will need the source code for the main monitor-core repository in
+order to compile this code.
+
 Building
 ========
 
 Sample configure command for building the modules:
 
+  GANGLIA_INCLUDES="-I/some/path/to/monitor-core/include -I/some/path/to/monitor-core/lib"
   ./configure \
-    CFLAGS="`apr-1-config --cflags --includes`" \
+    CFLAGS="`apr-1-config --cflags --includes` $GANGLIA_INCLUDES" \
     --enable-shared --disable-static
 
   make
