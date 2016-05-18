@@ -7,13 +7,15 @@ addons:
 
 before_install:
     - sudo apt-get update -q
-    - sudo apt-get install -y -q libganglia1-dev
+    - sudo apt-get install -y libganglia1-dev
 
 install:
     - mkdir m4
     - autoreconf --install
 
 script:
+    - ls /usr/include
+    - dpkg-query -L libganglia1-dev
     - ./configure --enable-shared --disable-static  CFLAGS="`apr-1-config --cflags --includes` -I`pwd`/monitor-core/include -I`pwd`/monitor-core/lib -I/usr/include"
     - make
 
