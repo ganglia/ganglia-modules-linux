@@ -200,6 +200,18 @@ unsigned int get_device_major(char *dev) {
 }
 
 
+int valid_disk(int major) {
+    debug_msg("major=%d", major);
+    if ((IDE_DISK_MAJOR(major)) ||
+        (SCSI_DISK_MAJOR(major)) ||
+        (major == VD_DISK_MAJOR) ||
+        (major == XVD_DISK_MAJOR)) {
+        return 1;
+    }
+    return 0;
+}
+
+
 
 /*
  * From here starts the subroutines that implement disk io metric
@@ -235,6 +247,10 @@ int printable(unsigned int major, unsigned int minor)
   } else if (SCSI_DISK_MAJOR(major)) {
     return (!(minor & 0x0F) && print_device) ||
       ((minor & 0x0F) && print_partition);
+  } else if (major == VD_DISK_MAJOR) {
+    return print_device;
+  } else if (major == XVD_DISK_MAJOR) {
+    return print_device;
   } else {
     return 1; /* if uncertain, print it */
   }
@@ -271,11 +287,11 @@ void init_partition_info(char **wanted_partitions, int wanted_partitions_n)
          curr.name, &reads) == 4) {
       unsigned int p;
 
-      // skipping other potential non-disk devices like VxDMP.
-      // Better way to check valid disk devices should replace this.
-      if(curr.major > 128) {
+      // skip invalid device types
+      if (!valid_disk(curr.major)) {
         buf = index(buf, '\n');
         if(buf != NULL) buf++;
+        debug_msg("Skipping %s", curr.name);
         continue;
       }
 
@@ -662,15 +678,15 @@ static int iostat_metric_init ( apr_pool_t *p )
     mmparam *params;
     int i;
 
-    //libmetrics_init();
-    num_cpustates = num_cpustates_func();
-    init_partition_info(NULL, 0);
-
     if (!VD_DISK_MAJOR)
         VD_DISK_MAJOR = get_device_major("vd");
 
     if (!XVD_DISK_MAJOR)
         XVD_DISK_MAJOR = get_device_major("xvd");
+
+    //libmetrics_init();
+    num_cpustates = num_cpustates_func();
+    init_partition_info(NULL, 0);
 
     print_io_info(); // prints debug msg
 
