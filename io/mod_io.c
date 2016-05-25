@@ -469,10 +469,10 @@ void print_io_info(void)
 {
 	int i;
 
-	debug_msg("printing partition info\n");
+	debug_msg("printing partition info");
   for(i=0;i<n_partitions;i++)
   {
-    debug_msg("partition: %s %d %d\n", partition[i].name, partition[i].major, partition[i].minor);
+    debug_msg("  partition: %s %d %d", partition[i].name, partition[i].major, partition[i].minor);
   }
 
   if (VD_DISK_MAJOR)
