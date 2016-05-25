@@ -137,7 +137,6 @@ static g_val_t fs_free_func (fs_info_t *fs)
         g_val_t val;
 
         struct statvfs svfs;
-        unsigned long blocksize;
         fsblkcnt_t blocks_free;
         fsblkcnt_t total_blocks;
 
