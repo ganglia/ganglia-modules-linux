@@ -679,7 +679,7 @@ static int iostat_metric_init ( apr_pool_t *p )
     int i;
 
     if (!VD_DISK_MAJOR)
-        VD_DISK_MAJOR = get_device_major("vd");
+        VD_DISK_MAJOR = get_device_major("virtblk");
 
     if (!XVD_DISK_MAJOR)
         XVD_DISK_MAJOR = get_device_major("xvd");
