@@ -176,7 +176,7 @@ metric_spec_t metrics[] = {
 };
 
 
-int create_metrics_for_device(apr_pool_t *p, apr_array_header_t *ar, fs_info_t *fs) {
+void create_metrics_for_device(apr_pool_t *p, apr_array_header_t *ar, fs_info_t *fs) {
 		metric_spec_t *metric;
 		Ganglia_25metric *gmi;
 		char *metric_name;
