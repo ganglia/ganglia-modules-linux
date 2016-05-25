@@ -201,7 +201,7 @@ int create_metrics_for_device(apr_pool_t *p, apr_array_header_t *ar, fs_info_t *
 
 void set_ganglia_name(apr_pool_t *p, fs_info_t *fs) {
 	int i, j=0;
-	char c;
+
 	if(strcmp(fs->mount_point, "/") == 0) {
 		fs->ganglia_name = apr_pstrdup(p, "root");
 		return;
