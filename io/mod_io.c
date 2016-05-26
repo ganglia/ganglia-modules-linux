@@ -49,6 +49,18 @@
           (M) <= SCSI_DISK15_MAJOR))
 #endif  /* !SCSI_DISK_MAJOR */
 
+
+/* Since vd? and xvd devices are dynamically assigned, we have to get
+   the major/minor information out of /proc/devices */
+
+#ifndef VD_DISK_MAJOR
+unsigned int VD_DISK_MAJOR = 0;
+#endif /* !VD_DISK_MAJOR */
+
+#ifndef XVD_DISK_MAJOR
+unsigned int XVD_DISK_MAJOR = 0;
+#endif /* !XDA_DISK_MAJOR */
+
 #define MAX_PARTITIONS 64
 #define PER_SEC(x) (1000.0 * (x) / deltams)
 
@@ -92,6 +104,7 @@ void print_io_info(void);
 timely_file proc_stat       = { {0,0} , 1., "/proc/stat", NULL, IO_BUFFSIZE };
 timely_file proc_partitions = { {0,0} , 1., "/proc/partitions", NULL, IO_BUFFSIZE };
 timely_file proc_diskstats  = { {0,0} , 1., "/proc/diskstats", NULL, IO_BUFFSIZE };
+timely_file proc_devices    = { {0,0} , 1., "/proc/devices", NULL, IO_BUFFSIZE };
 
 
 
@@ -146,6 +159,59 @@ num_cpustates_func ( void )
 }
 
 
+unsigned int get_device_major(char *dev) {
+  unsigned int major = 0;
+  char device[128];
+  char major_str[8];
+  char * text = NULL;
+
+  text = update_file(&proc_devices);
+
+  debug_msg("getting device major for %s", dev);
+
+  /* loop over text, searching for pairs of non-witespace */
+  while ( text != NULL) {
+
+    int scan_code = sscanf(text, "%s %s", major_str, device);
+    if (2 == scan_code) {
+      text = index(text, '\n');
+      /* printf(">>> %s %s\n", major_str, device); */
+      if (NULL != text) {
+        text++;
+      }
+    } else if (EOF == scan_code) {
+        /* end of file before finished parsing, bail out */
+        break;
+    }
+
+    /* does it match? */
+    if (!strncmp(device, dev, 16)) {
+      /* debug_msg("found %s", dev); */
+      major = strtoul(major_str, NULL, 10);
+      break;
+    }
+
+    /* very last (nul) byte of text, bail out */
+    if (text == NULL)
+        break ;
+  }
+
+  return major;
+}
+
+
+int valid_disk(int major) {
+    debug_msg("major=%d", major);
+    if ((IDE_DISK_MAJOR(major)) ||
+        (SCSI_DISK_MAJOR(major)) ||
+        (major == VD_DISK_MAJOR) ||
+        (major == XVD_DISK_MAJOR)) {
+        return 1;
+    }
+    return 0;
+}
+
+
 
 /*
  * From here starts the subroutines that implement disk io metric
@@ -181,6 +247,10 @@ int printable(unsigned int major, unsigned int minor)
   } else if (SCSI_DISK_MAJOR(major)) {
     return (!(minor & 0x0F) && print_device) ||
       ((minor & 0x0F) && print_partition);
+  } else if (major == VD_DISK_MAJOR) {
+    return print_device;
+  } else if (major == XVD_DISK_MAJOR) {
+    return print_device;
   } else {
     return 1; /* if uncertain, print it */
   }
@@ -217,11 +287,11 @@ void init_partition_info(char **wanted_partitions, int wanted_partitions_n)
          curr.name, &reads) == 4) {
       unsigned int p;
 
-      // skipping other potential non-disk devices like VxDMP.
-      // Better way to check valid disk devices should replace this.
-      if(curr.major > 128) {
+      // skip invalid device types
+      if (!valid_disk(curr.major)) {
         buf = index(buf, '\n');
         if(buf != NULL) buf++;
+        debug_msg("Skipping %s", curr.name);
         continue;
       }
 
@@ -399,11 +469,17 @@ void print_io_info(void)
 {
 	int i;
 
-	debug_msg("printing partition info\n");
+	debug_msg("printing partition info");
   for(i=0;i<n_partitions;i++)
   {
-    debug_msg("partition: %s %d %d\n", partition[i].name, partition[i].major, partition[i].minor);
+    debug_msg("  partition: %s %d %d", partition[i].name, partition[i].major, partition[i].minor);
   }
+
+  if (VD_DISK_MAJOR)
+    debug_msg("Found dynamic major for vdX: %d", VD_DISK_MAJOR);
+
+  if (XVD_DISK_MAJOR)
+    debug_msg("Found dynamic major for xvdX: %d", XVD_DISK_MAJOR);
 }
 
 double get_deltams()
@@ -602,9 +678,16 @@ static int iostat_metric_init ( apr_pool_t *p )
     mmparam *params;
     int i;
 
+    if (!VD_DISK_MAJOR)
+        VD_DISK_MAJOR = get_device_major("virtblk");
+
+    if (!XVD_DISK_MAJOR)
+        XVD_DISK_MAJOR = get_device_major("xvd");
+
     //libmetrics_init();
     num_cpustates = num_cpustates_func();
     init_partition_info(NULL, 0);
+
     print_io_info(); // prints debug msg
 
 
@@ -666,7 +749,7 @@ static g_val_t iostat_metric_handler ( int metric_index )
 
 static Ganglia_25metric iostat_metric_info[] = 
 {
-	{0, "io_reads",   120, GANGLIA_VALUE_FLOAT,          "reads/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of reads"},
+  {0, "io_reads",   120, GANGLIA_VALUE_FLOAT,          "reads/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of reads"},
   {0, "io_nread", 120, GANGLIA_VALUE_FLOAT,          "bytes/sec",         "both",  "%.1f",UDP_HEADER_SIZE+8, "total bytes read"},
   {0, "io_writes",  120, GANGLIA_VALUE_FLOAT,          "writes/sec",          "both",  "%.2f",UDP_HEADER_SIZE+8, "total number of writes"},
   {0, "io_nwrite",120, GANGLIA_VALUE_FLOAT,          "bytes/sec",         "both",  "%.1f",UDP_HEADER_SIZE+8, "total bytes written"},
