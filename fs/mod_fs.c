@@ -137,7 +137,6 @@ static g_val_t fs_free_func (fs_info_t *fs)
         g_val_t val;
 
         struct statvfs svfs;
-        unsigned long blocksize;
         fsblkcnt_t blocks_free;
         fsblkcnt_t total_blocks;
 
@@ -177,7 +176,7 @@ metric_spec_t metrics[] = {
 };
 
 
-int create_metrics_for_device(apr_pool_t *p, apr_array_header_t *ar, fs_info_t *fs) {
+void create_metrics_for_device(apr_pool_t *p, apr_array_header_t *ar, fs_info_t *fs) {
 		metric_spec_t *metric;
 		Ganglia_25metric *gmi;
 		char *metric_name;
@@ -202,7 +201,7 @@ int create_metrics_for_device(apr_pool_t *p, apr_array_header_t *ar, fs_info_t *
 
 void set_ganglia_name(apr_pool_t *p, fs_info_t *fs) {
 	int i, j=0;
-	char c;
+
 	if(strcmp(fs->mount_point, "/") == 0) {
 		fs->ganglia_name = apr_pstrdup(p, "root");
 		return;
