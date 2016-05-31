@@ -40,6 +40,8 @@ mmodule fs_module;
 
 
 
+#define UPDATE_INTERVAL 5
+struct timespec last_update;
 
 /*
  *  /proc/mounts  = device_node mountpoint fs opts dump passno   (same as /etc/fstab)
@@ -167,11 +169,11 @@ typedef struct metric_spec {
 
 #define NUM_FS_METRICS 3
 metric_spec_t metrics[] = {
-		
+
 		{ fs_capacity_bytes_func, "capacity_bytes", "bytes", "capacity in bytes", "%.0f" },
 		{ fs_used_bytes_func, "used_bytes", "bytes", "space used in bytes", "%.0f" },
                 { fs_free_func, "free_pct", "%", "percentage space free", "%.0f" },
-		
+
 		{ NULL, NULL, NULL, NULL, NULL }
 };
 
@@ -227,9 +229,28 @@ int scan_mounts(apr_pool_t *p) {
 	char mount[128], device[128], type[32], mode[128];
 	int rc;
 	fs_info_t *fs;
+        struct timespec now;
 
-	filesystems = apr_array_make(p, 2, sizeof(fs_info_t));
-	metric_info = apr_array_make(p, 2, sizeof(Ganglia_25metric));
+        /* update global */
+        rc = clock_gettime(CLOCK_REALTIME, &now);
+        //debug_msg(" now=%u < (last_update=%u + update_interval=%u)", now.tv_sec, last_update.tv_sec, UPDATE_INTERVAL);
+        /* Too soon to update the mounts */
+        if (now.tv_sec < (last_update.tv_sec + UPDATE_INTERVAL)) { 
+            return 1;
+        }
+
+        if (NULL == filesystems) {
+            filesystems = apr_array_make(p, 2, sizeof(fs_info_t));
+        } else {
+            apr_array_clear(filesystems);
+        }
+
+        if (NULL == metric_info) {
+            metric_info = apr_array_make(p, 2, sizeof(Ganglia_25metric));
+        } else {
+            apr_array_clear(metric_info);
+        }
+
 
 	mounts = fopen(MOUNTS, "r");
 	if (!mounts) {
@@ -260,7 +281,9 @@ int scan_mounts(apr_pool_t *p) {
 	}
 	fclose(mounts);
 
-	return 0;
+        last_update.tv_sec = now.tv_sec;
+
+        return 0;
 }
 
 apr_pool_t *pool = NULL;
@@ -274,6 +297,7 @@ static int ex_metric_init (apr_pool_t *p)
     apr_pool_create(&pool, p);
 
     /* Initialize each metric */
+    /* side effects: filesystems and metric_info arrays */
     scan_mounts(pool);
 
     /* Add a terminator to the array and replace the empty static metric definition 
@@ -309,9 +333,10 @@ static g_val_t ex_metric_handler(int metric_index) {
 	_metric_index = metric_index % NUM_FS_METRICS;
 
 	fs = &all_fs[fs_index];
-	
+
 	debug_msg("fs: handling read for metric %d fs %d idx %d (%s)",
 			metric_index, fs_index, _metric_index, fs->mount_point);
+	scan_mounts(pool);
 	val = metrics[_metric_index].fs_func(fs);
 
 	return val;
