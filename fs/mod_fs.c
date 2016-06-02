@@ -109,13 +109,13 @@ int is_mounted(char *mount_point) {
 	cur_fs = &((fs_info_t*)filesystems->elts)[i];
 
 	len = MAX(strlen(cur_fs->mount_point), strlen(mount_point));
-	
+
 	//debug_msg("Checking [%s] against filesystem[%s] (%d)", mount_point, cur_fs->mount_point, len);
 	if (!strncmp(mount_point, cur_fs->mount_point, len)) {
 	    found=1;
 	    break;
 	}
-	
+
     }
     //debug_msg("%s:%d: [%s] is %s", __FILE__, __LINE__, mount_point, (found ? "mounted" : "not mounted"));
     return found;
@@ -133,6 +133,10 @@ static g_val_t fs_capacity_bytes_func (fs_info_t *fs)
 	fsblkcnt_t size;
 
 	val.f = (float) NAN;
+
+	/* return NAN if mount point not in /proc/mounts */
+	if (!is_mounted(fs->mount_point))
+		return val;
 
 	if (statvfs(fs->mount_point, &svfs)) {
 		/* Ignore funky devices... */
@@ -161,6 +165,10 @@ static g_val_t fs_used_bytes_func (fs_info_t *fs)
 
 	val.f = (float) NAN;
 
+	/* return NAN if mount point not in /proc/mounts */
+	if (!is_mounted(fs->mount_point))
+		return val;
+
 	if (statvfs(fs->mount_point, &svfs)) {
 		/* Ignore funky devices... */
 		return val;
@@ -186,6 +194,10 @@ static g_val_t fs_free_func (fs_info_t *fs)
         fsblkcnt_t total_blocks;
 
         val.f = (float) NAN;
+
+	/* return NAN if mount point not in /proc/mounts */
+	if (!is_mounted(fs->mount_point))
+		return val;
 
         if (statvfs(fs->mount_point, &svfs)) {
                 /* Ignore funky devices... */
