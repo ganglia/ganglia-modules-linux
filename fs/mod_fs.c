@@ -24,6 +24,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <sys/statvfs.h>
+#include <errno.h>
 
 #include <apr_tables.h>
 #include <apr_strings.h>
@@ -46,10 +47,10 @@ struct timespec last_update;
 /*
  *  /proc/mounts  = device_node mountpoint fs opts dump passno   (same as /etc/fstab)
  *    - we use this to get a list of filesystems
- *    
+ *
  *  statvfs()
  *    - we use this function to get the statistics for an FS
- *    
+ *
  */
 
 
@@ -63,7 +64,14 @@ typedef struct fs_info {
 
 /* Linux Specific, but we are in the Linux machine file. */
 #define MOUNTS "/proc/mounts"
+#define STRMAX 128
+#define LINEMAX 256
 
+
+/* globals for mounts, filesystems, and metrics */
+apr_array_header_t *mounts      = NULL;
+apr_array_header_t *filesystems = NULL;
+apr_array_header_t *metric_info = NULL;
 
 
 /* --------------------------------------------------------------------------- */
@@ -79,6 +87,41 @@ int remote_mount(const char *device, const char *type)
 }
 
 typedef g_val_t (*fs_func_t)(fs_info_t *fs);
+
+
+
+
+/* Check the "filesystem" global list for the mount point in question.
+ * Return true if listed, false if not.  Note that this could be up to
+ * UPDATE_INTERVAL seconds out of date, due to caching the results of
+ * /proc/mounts
+ */
+int is_mounted(char *mount_point) {
+
+    fs_info_t *cur_fs;
+    int i, found=0;
+
+    if (!filesystems)
+	return 0;
+
+    for (i=0; i < filesystems->nelts; i++) {
+	int len, diff;
+	cur_fs = &((fs_info_t*)filesystems->elts)[i];
+
+	len = MAX(strlen(cur_fs->mount_point), strlen(mount_point));
+	
+	//debug_msg("Checking [%s] against filesystem[%s] (%d)", mount_point, cur_fs->mount_point, len);
+	if (!strncmp(mount_point, cur_fs->mount_point, len)) {
+	    found=1;
+	    break;
+	}
+	
+    }
+    //debug_msg("%s:%d: [%s] is %s", __FILE__, __LINE__, mount_point, (found ? "mounted" : "not mounted"));
+    return found;
+
+}
+
 
 static g_val_t fs_capacity_bytes_func (fs_info_t *fs)
 {
@@ -220,13 +263,10 @@ void set_ganglia_name(apr_pool_t *p, fs_info_t *fs) {
 	fs->ganglia_name[j] = 0;
 }
 
-apr_array_header_t *filesystems = NULL;
-apr_array_header_t *metric_info = NULL;
-
 int scan_mounts(apr_pool_t *p) {
 	FILE *mounts;
-	char procline[256];
-	char mount[128], device[128], type[32], mode[128];
+	char procline[LINEMAX];
+	char mount[STRMAX], device[STRMAX], type[STRMAX], mode[STRMAX];
 	int rc;
 	fs_info_t *fs;
         struct timespec now;
@@ -235,9 +275,11 @@ int scan_mounts(apr_pool_t *p) {
         rc = clock_gettime(CLOCK_REALTIME, &now);
         //debug_msg(" now=%u < (last_update=%u + update_interval=%u)", now.tv_sec, last_update.tv_sec, UPDATE_INTERVAL);
         /* Too soon to update the mounts */
-        if (now.tv_sec < (last_update.tv_sec + UPDATE_INTERVAL)) { 
+        if (now.tv_sec < (last_update.tv_sec + UPDATE_INTERVAL)) {
             return 1;
         }
+
+	//debug_msg("%s:%d: Updating filesystem cache", __FILE__,__LINE__);
 
         if (NULL == filesystems) {
             filesystems = apr_array_make(p, 2, sizeof(fs_info_t));
@@ -258,12 +300,24 @@ int scan_mounts(apr_pool_t *p) {
 		return -1;
 	}
 	while ( fgets(procline, sizeof(procline), mounts) ) {
+
 		rc=sscanf(procline, "%s %s %s %s ", device, mount, type, mode);
-		if (!rc) continue;
+		if (!rc)
+			continue;
+
 		//if (!strncmp(mode, "ro", 2)) continue;
-		if (remote_mount(device, type)) continue;
-		if (strncmp(device, "/dev/", 5) != 0 &&
-				strncmp(device, "/dev2/", 6) != 0) continue;
+		
+		/* Skip remote filesystems */
+		if (remote_mount(device, type))
+			continue;
+
+		/* Skip non-device and non-tmpfs mounts
+		 * (this excludes all the "wierd" stuff in /sys,
+		 * autofs placeholders, etc */
+		if ( strncmp(device, "/dev/",  5) != 0 &&
+		     strncmp(device, "/dev2/", 6) != 0 ) {
+			continue;
+		}
 
 		fs = apr_array_push(filesystems);
 		bzero(fs, sizeof(fs_info_t));
@@ -276,7 +330,7 @@ int scan_mounts(apr_pool_t *p) {
 		create_metrics_for_device(p, metric_info, fs);
 
 		//thispct = device_space(mount, device, total_size, total_free);
-		debug_msg("Found device %s (%s)", device, type);
+		debug_msg("%s: Found device %s (%s)", __FILE__, device, type);
 
 	}
 	fclose(mounts);
@@ -300,8 +354,8 @@ static int ex_metric_init (apr_pool_t *p)
     /* side effects: filesystems and metric_info arrays */
     scan_mounts(pool);
 
-    /* Add a terminator to the array and replace the empty static metric definition 
-        array with the dynamic array that we just created 
+    /* Add a terminator to the array and replace the empty static metric definition
+        array with the dynamic array that we just created
     */
     gmi = apr_array_push(metric_info);
     memset (gmi, 0, sizeof(*gmi));
