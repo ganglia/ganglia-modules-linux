@@ -41,6 +41,9 @@ AC_PROG_INSTALL
 
 AC_PROG_LIBTOOL
 
+APR_FIND_APR(,,1,1,)
+AC_SUBST(APR_INCLUDES, `$apr_config --includes`)
+
 dnl default VARSTATEDIR to /var/lib since that's the traditional location.
 dnl
 varstatedir="/var/lib"

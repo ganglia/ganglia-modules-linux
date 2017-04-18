@@ -14,7 +14,7 @@ modmulticpu_la_LDFLAGS = -module -avoid-version
 EXTRA_DIST = ../conf.d/mod_multicpu.conf
 endif
 
-#INCLUDES = @APR_INCLUDES@
+AM_CPPFLAGS = @APR_INCLUDES@
 
 pkglibdir = $(libdir)/ganglia
 
